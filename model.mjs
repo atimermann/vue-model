@@ -241,11 +241,12 @@ export default class Model {
     }
 
     let validatorType = this.__schema[attrName]
-    let options
+    let options = []
 
     if (Array.isArray(validatorType)) {
       [validatorType, ...options] = validatorType
     }
+
 
     if (validatorType === 'any') return
 
