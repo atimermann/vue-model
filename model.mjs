@@ -12,8 +12,8 @@
  *
  */
 
-import { ref } from 'vue'
-import { cloneDeep, isPlainObject } from 'lodash'
+import {ref} from 'vue'
+import {cloneDeep, isPlainObject} from 'lodash'
 import validator from 'validator'
 
 export default class Model {
@@ -34,7 +34,7 @@ export default class Model {
    * @param data {Object} Objeto plano com os dados
    * @returns {*}
    */
-  static create (data) {
+  static create(data) {
     return ref(this._create(data))
   }
 
@@ -43,7 +43,7 @@ export default class Model {
    * @param collectionData
    * @returns {Ref<UnwrapRef<*[]>>}
    */
-  static createCollection (collectionData) {
+  static createCollection(collectionData) {
     return ref(this._createCollection(collectionData))
   }
 
@@ -55,7 +55,7 @@ export default class Model {
    * @param id
    * @returns {Promise<void>}
    */
-  static async fetch (id) {
+  static async fetch(id) {
     throw Error('Not implemented yet')
   }
 
@@ -65,7 +65,7 @@ export default class Model {
    *
    * @returns {Promise<void>}
    */
-  static async fetchCollection () {
+  static async fetchCollection() {
     throw Error('Not implemented yet')
   }
 
@@ -76,7 +76,7 @@ export default class Model {
    *
    * @returns {Promise<void>}
    */
-  async save () {
+  async save() {
     throw Error('Not implemented yet')
   }
 
@@ -86,7 +86,7 @@ export default class Model {
    *
    * @returns {Promise<void>}
    */
-  async delete () {
+  async delete() {
     throw Error('Not implemented yet')
   }
 
@@ -100,7 +100,7 @@ export default class Model {
    * @returns {Model}
    * @private
    */
-  static _create (data) {
+  static _create(data) {
     if (!data) {
       throw new Error("The argument 'data' was not provided or is null or undefined.")
     }
@@ -139,7 +139,7 @@ export default class Model {
    * @returns {*}
    * @private
    */
-  static _createCollection (collectionData) {
+  static _createCollection(collectionData) {
     if (!Array.isArray(collectionData)) {
       throw new Error('Collection data must be an array')
     }
@@ -155,7 +155,7 @@ export default class Model {
    * @param value
    * @private
    */
-  static _createSimpleProperty (instance, attrName, value) {
+  static _createSimpleProperty(instance, attrName, value) {
     Object.defineProperty(instance, attrName, {
       enumerable: true,
       configurable: false,
@@ -172,7 +172,7 @@ export default class Model {
    * @param value
    * @private
    */
-  static _createSubModelProperty (instance, attrName, value) {
+  static _createSubModelProperty(instance, attrName, value) {
     const SubClass = this.__schema[attrName]
 
     if (Array.isArray(value)) {
@@ -198,7 +198,7 @@ export default class Model {
    * @param instance
    * @private
    */
-  static _hideSchemaProperty (instance) {
+  static _hideSchemaProperty(instance) {
     Object.defineProperty(instance, '__schema', {
       enumerable: false,
       configurable: false
@@ -214,7 +214,7 @@ export default class Model {
    * @param instance
    * @private
    */
-  static _makeGettersAndSettersEnumerable (instance) {
+  static _makeGettersAndSettersEnumerable(instance) {
     for (const [propName, propDesc] of Object.entries(Object.getOwnPropertyDescriptors(Object.getPrototypeOf(instance)))) {
       if (!propDesc.enumerable && (propDesc.get || propDesc.set)) {
         Object.defineProperty(instance, propName, {
@@ -235,7 +235,7 @@ export default class Model {
    * @param value
    * @private
    */
-  static _validate (instance, attrName, value) {
+  static _validate(instance, attrName, value) {
     if (!this.__schema) {
       return
     }
@@ -261,17 +261,16 @@ export default class Model {
     if (['boolean', 'number', 'string'].includes(validatorType)) {
       // eslint-disable-next-line valid-typeof
       if (typeof value !== validatorType) {
-        throw new TypeError(`In model '${this.name}', property '${attrName}'  must be '${validatorType}'`)
+        throw new TypeError(`In model '${thisnp.name}', property '${attrName}'  must be '${validatorType}'`)
       }
     } else {
-      let valid
-      try {
-        valid = validator[validatorType](value, ...options)
-      } catch (e) {
-        throw new TypeError(`In model '${this.name}', property '${attrName}', property type '${validatorType}'  is invalid.`)
+
+      if (!validator[validatorType]) {
+        throw new TypeError(`In model '${this.name}', property '${attrName}', validator '${validatorType}' does not exist.`)
       }
 
-      if (!valid) {
+      console.log('VALIDATOR ', validator[validatorType](value, ...options))
+      if (!validator[validatorType](value, ...options)) {
         throw new TypeError(`In model '${this.name}', property '${attrName}' is invalid '${validatorType}'. ${options ? 'Rules:' + JSON.stringify(options) : ''}'`)
       }
     }
