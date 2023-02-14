@@ -245,8 +245,7 @@ export default class Model {
 
     if (Array.isArray(validatorType)) {
       [validatorType, ...options] = validatorType
-
-      console.log('OPTIONS', options)
+      if (!options) options = []
     }
 
     if (validatorType === 'any') return
