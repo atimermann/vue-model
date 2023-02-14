@@ -245,7 +245,6 @@ export default class Model {
 
     if (Array.isArray(validatorType)) {
       [validatorType, ...options] = validatorType
-      if (!options) options = []
     }
 
     if (validatorType === 'any') return
@@ -268,7 +267,6 @@ export default class Model {
         throw new TypeError(`In model '${this.name}', property '${attrName}', validator '${validatorType}' does not exist.`)
       }
 
-      console.log('VALIDATOR ', validator[validatorType](value, ...options))
       if (!validator[validatorType](value, ...options)) {
         throw new TypeError(`In model '${this.name}', property '${attrName}' is invalid '${validatorType}'. ${options ? 'Rules:' + JSON.stringify(options) : ''}'`)
       }
