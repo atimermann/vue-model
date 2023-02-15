@@ -1,7 +1,7 @@
 {
   "name": "@agtm/vue-model",
   "private": false,
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Class base to be used in object-oriented model implementation",
   "main": "model.mjs",
   "scripts": {

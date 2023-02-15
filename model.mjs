@@ -309,8 +309,8 @@ export default class Model {
     // Valida Data
     ///////////////////////////////////////////////////
     if (validatorType === 'date') {
-      if (!value instanceof Date) {
-        throw new TypeError(`In model '${this.name}', property '${attrName}'  must be Date Object`)
+      if (!(value instanceof Date)) {
+        throw new TypeError(`In model '${this.name}', property '${attrName}'  must be Date object`)
       }
       return
     }
@@ -325,6 +325,10 @@ export default class Model {
       }
       return
     }
+
+    ///////////////////////////////////////////////////
+    // Validator
+    ///////////////////////////////////////////////////
 
     if (!validator[validatorType]) {
       throw new TypeError(`In model '${this.name}', property '${attrName}', validator '${validatorType}' does not exist.`)
