@@ -290,29 +290,49 @@ export default class Model {
       [validatorType, ...options] = validatorType
     }
 
-    if (validatorType === 'any') return
-
-    // Validação irá ocorrer ao instanciar classe filho
-    if (typeof validatorType === 'function') return
 
     if (validatorType === undefined) {
       throw new TypeError(`In model '${this.name}', property '${attrName}' does not exist.`)
     }
 
+    ///////////////////////////////////////////////////
+    // Aceita qualquer coisa
+    ///////////////////////////////////////////////////
+    if (validatorType === 'any') return
+
+    ///////////////////////////////////////////////////
+    // Validação irá ocorrer ao instanciar classe filho
+    ///////////////////////////////////////////////////
+    if (typeof validatorType === 'function') return
+
+    ///////////////////////////////////////////////////
+    // Valida Data
+    ///////////////////////////////////////////////////
+    if (validatorType === 'date') {
+      if (!value instanceof Date) {
+        throw new TypeError(`In model '${this.name}', property '${attrName}'  must be Date Object`)
+      }
+      return
+    }
+
+    ///////////////////////////////////////////////////
+    // Boolean / Number / String
+    ///////////////////////////////////////////////////
     if (['boolean', 'number', 'string'].includes(validatorType)) {
       // eslint-disable-next-line valid-typeof
       if (typeof value !== validatorType) {
         throw new TypeError(`In model '${this.name}', property '${attrName}'  must be '${validatorType}'`)
       }
-    } else {
-
-      if (!validator[validatorType]) {
-        throw new TypeError(`In model '${this.name}', property '${attrName}', validator '${validatorType}' does not exist.`)
-      }
-
-      if (!validator[validatorType](value, ...options)) {
-        throw new TypeError(`In model '${this.name}', property '${attrName}' is invalid '${validatorType}'. ${options ? 'Rules:' + JSON.stringify(options) : ''}'`)
-      }
+      return
     }
+
+    if (!validator[validatorType]) {
+      throw new TypeError(`In model '${this.name}', property '${attrName}', validator '${validatorType}' does not exist.`)
+    }
+
+    if (!validator[validatorType](value, ...options)) {
+      throw new TypeError(`In model '${this.name}', property '${attrName}' is invalid '${validatorType}'. ${options ? 'Rules:' + JSON.stringify(options) : ''}'`)
+    }
+
   }
 }
