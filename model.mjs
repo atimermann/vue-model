@@ -163,7 +163,7 @@ export default class Model {
 
       this._validate(instance, attrName, value)
 
-      if (typeof value === 'object' && value !== null) {
+      if (isPlainObject(value)) {
         this._createSubModelProperty(instance, attrName, value)
       } else {
         this._createSimpleProperty(instance, attrName, value)
