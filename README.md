@@ -77,13 +77,59 @@ const user = await UserModel.create({
 * **createCollection(collectionData):** cria uma coleção de instâncias do modelo a partir de um array de objetos plano
   com os dados e retorna uma referência reativa da coleção criada.
 
+### Fetch e Refresh
+
+O model fornece dois métodos que permite requisitar dados e retornar método refresh
+baseado no $useFresh (https://nuxt.com/docs/api/composables/use-fetch)
+
+* **fetch(id):** Realiza requisição de um registro, instancia um Model com esse registro, e retorna um objeto, com model
+  e uma função para atualização reativa
+
+* **fetchCollection():** Realiza requisição de uma coleção registro (array), instancia cada Model com esses registros, e
+  retorna um objeto, com coleção de model e uma função para atualização reativa
+
+Para funcionar, você precisa implementar os métodos:
+
+* **_fetch(id)** e **_fetchCollection()** e deve retornar os dados já reativo (com ref())
+
+Exemplo:
+
+```javascript
+
+export default class InventoryModel extends Model {
+
+  // Atenção ao prefixo do método com underline
+  static async _fetchCollection() {
+    const {data} = await useFetch('http://localhost:3001/api/v1/inventory')
+    return this.createCollection(data.value)
+  }
+}
+```
+
+* Esse método será chamado inernamente pelo fetchCollection() e vai retornar data e uma função refresh
+* Também funciona para _fetch e fetch
+* Você pode criar outros métodos com mesma funcionalidade da mesma maneira q fetch e fetchColection foi implementado
+
+Exemplo:
+
+```javascript
+export default class InventoryModel extends Model {
+
+  static async _fetchOtherThing() {
+    const {data} = await useFetch('http://localhost:3001/api/v1/inventory')
+    return await  this.createCollection(data.value)
+  }
+
+  static async fetchOtherThing() {
+    return await this.fetchAndRefresh('_fetchCollection')
+  }
+}
+```
+
+* Por enquanto apenas o refresh tá implementado, verificar no futuro: pending, execute e error
+
 ### Métodos recomendádos:
 
-* **fetch(id):** puxa os dados do backend para criar uma instância do modelo com o id correspondente. Este método deve
-  ser
-  implementado de acordo com a API do backend utilizado na aplicação.
-* **fetchCollection():** puxa os dados do backend para criar uma coleção de instâncias do modelo. Este método deve ser
-  implementado de acordo com a API do backend utilizado na aplicação.
 * **save():** persiste as mudanças feitas em uma instância do modelo no backend. Este método deve ser implementado de
   acordo
   com a API do backend utilizado na aplicação.

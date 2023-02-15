@@ -48,6 +48,29 @@ export default class Model {
   }
 
   /**
+   * Retorna dados reativo e função para atualização reativa
+   * Baseado no $useFetch (https://nuxt.com/docs/api/composables/use-fetch)
+   *
+   * Suporta apenas refresh no momento
+   *
+   * @param fetchMethodName {string}  Nome do método que vai retornar relizar o fetch e retornar os dados
+   * @param args            {string}  Lista de parâmetros do método
+   * @returns {Promise<{data: *, refresh(): Promise<void>}>}
+   */
+  static async fetchAndRefresh(fetchMethodName, ...args) {
+    const Class = this
+    const data = await Class[fetchMethodName](...args)
+
+    return {
+      data,
+      async refresh() {
+        const newData = await Class[fetchMethodName](...args)
+        data.value = newData.value
+      }
+    }
+  }
+
+  /**
    * Implementar aqui código que usa puxa dados do backend
    *
    * Ex: no nuxt utilizar $useFetch
@@ -55,18 +78,38 @@ export default class Model {
    * @param id
    * @returns {Promise<void>}
    */
-  static async fetch(id) {
+  static async _fetch(id) {
     throw Error('Not implemented yet')
   }
 
   /**
+   * Retorna Collection e função para atualização reativa da coleção
+   *
+   * @returns {Promise<{data: void, refresh(): Promise<void>}>}
+   */
+  static async fetch(id) {
+    return await this.fetchAndRefresh('_fetchCollection', id)
+  }
+
+  /**
    * Implementar aqui código para puxar coleção do backend
+   *
    * Ex: no nuxt utilizar $useFetch
    *
    * @returns {Promise<void>}
    */
-  static async fetchCollection() {
+  static async _fetchCollection() {
     throw Error('Not implemented yet')
+  }
+
+
+  /**
+   * Retorna Collection e função para atualização reativa da coleção
+   *
+   * @returns {Promise<{data: void, refresh(): Promise<void>}>}
+   */
+  static async fetchCollection() {
+    return await this.fetchAndRefresh('_fetchCollection')
   }
 
   /**
@@ -246,7 +289,6 @@ export default class Model {
     if (Array.isArray(validatorType)) {
       [validatorType, ...options] = validatorType
     }
-
 
     if (validatorType === 'any') return
 
