@@ -302,7 +302,7 @@ export default class Model {
     if (['boolean', 'number', 'string'].includes(validatorType)) {
       // eslint-disable-next-line valid-typeof
       if (typeof value !== validatorType) {
-        throw new TypeError(`In model '${thisnp.name}', property '${attrName}'  must be '${validatorType}'`)
+        throw new TypeError(`In model '${this.name}', property '${attrName}'  must be '${validatorType}'`)
       }
     } else {
 
