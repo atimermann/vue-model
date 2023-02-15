@@ -160,6 +160,7 @@ export default class Model {
 
     for (const [attrName, value] of Object.entries(data)) {
       if (attrName === '__schema') continue
+      if (value === undefined) continue
 
       this._validate(instance, attrName, value)
 
