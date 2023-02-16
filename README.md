@@ -70,7 +70,14 @@ const user = await UserModel.create({
 })
 ```
 
-## API
+## Recomendações
+
+* Centralize todos as operações relacionado a dados no model, permitindo que seja utilizado em diferentes componentes
+* Getters e Setters para propriedades dinamicas como um valor monetário formatado, ou um calculo especial como somatório
+* Utilize os métodos fetch, fetchCollection, save, delete ou crie outros para requisições backend
+  * No nuxt pode utilizar $useFetch ou #fetch
+
+# API
 
 * **create(data):** Cria uma nova instância do modelo a partir de um objeto plano com os dados e retorna uma referência
   reativa da instância criada.
@@ -117,7 +124,7 @@ export default class InventoryModel extends Model {
 
   static async _fetchOtherThing() {
     const {data} = await useFetch('http://localhost:3001/api/v1/inventory')
-    return await  this.createCollection(data.value)
+    return await this.createCollection(data.value)
   }
 
   static async fetchOtherThing() {
@@ -137,9 +144,39 @@ export default class InventoryModel extends Model {
   backend
   utilizado na aplicação.
 
-## Recomendações
 
-* Centralize todos as operações relacionado a dados no model, permitindo que seja utilizado em diferentes componentes
-* Getters e Setters para propriedades dinamicas como um valor monetário formatado, ou um calculo especial como somatório
-* Utilize os métodos fetch, fetchCollection, save, delete ou crie outros para requisições backend
-    * No nuxt pode utilizar $useFetch ou #fetch
+
+# Métodos Auxiliares em coleções
+
+Ao executar o código:
+
+```javascript
+  const myInstance = Model.createCollecion(data)
+```
+
+É retornado uma variavel reativa do vue3, internamente createCollection já executa **ref(myCollection)**, integrando
+perfeitamente com o vue3.
+
+Além disso. o vue-model injeta na variavel reativa, alguns métodos auxiliares para ser usado no seu código, por exemplo:
+
+```javascript
+  const myInstance = Model.createCollecion(data)
+
+// Para buscar um item na coleção, em vez de fazer:
+const myItem = myInstance.value.find(item => item.id === myId)
+
+// Podemos utiliar a função interna auxiliar findById:
+const myItem = myInstance.findById(myId)
+
+```
+
+**IMPORTANTE:** Você sempre deve inicializar a varíavel com createCollection ou create. Se iniciar a variavel com ref()
+estes métodos não estarão disponíveis.
+
+Abaixo a lista de métodos auxilires disponivel:
+
+## findById(id)
+
+Busca uma instância na coleção à partir do id passado:
+
+

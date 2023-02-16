@@ -59,7 +59,6 @@ export default class Model {
       }
     })
 
-
     return collection
   }
 
@@ -95,7 +94,7 @@ export default class Model {
    * @returns {Promise<void>}
    */
   static async _fetch(id) {
-    throw Error('Method _fetch() not implemented yet')
+    throw Error('Static method _fetch() not implemented yet')
   }
 
   /**
@@ -115,7 +114,7 @@ export default class Model {
    * @returns {Promise<void>}
    */
   static async _fetchCollection() {
-    throw Error('Method _fetchCollection() not implemented yet')
+    throw Error('Static method _fetchCollection() not implemented yet')
   }
 
 
@@ -126,6 +125,51 @@ export default class Model {
    */
   static async fetchCollection() {
     return await this.fetchAndRefresh('_fetchCollection')
+  }
+
+  /**
+   * Atribui um valor a instancia do modelo realizando validações necessárias, sem realizar outra instancia
+   *
+   * @param attrName
+   * @param value
+   */
+  setValue(attrName, value) {
+
+    this._validate(attrName, value)
+
+    if (isPlainObject(value)) {
+      this._createSubModelProperty(attrName, value)
+    } else {
+      this._createSimpleProperty(attrName, value)
+    }
+
+  }
+
+  /**
+   * Atribui objeto à instancia, altera apenas objetos definidos, ignora undefined ou o que não foi definido
+   * Não remove atributos, não use undefined
+   *
+   * @param data
+   */
+  setValues(data) {
+
+    if (!data) {
+      throw new Error("The argument 'data' was not provided or is null or undefined.")
+    }
+
+    if (!isPlainObject(data)) {
+      throw new TypeError(`The 'data' argument must be a plain object. Received: ${JSON.stringify(data)}`)
+    }
+
+    if (Array.isArray(data)) {
+      throw new Error('Array is not allowed. To create collections use createCollection.')
+    }
+
+    for (const [attrName, value] of Object.entries(data)) {
+      if (value === undefined) continue
+      this.setValue(attrName, value)
+    }
+
   }
 
   /**
@@ -160,36 +204,10 @@ export default class Model {
    * @private
    */
   static _create(data) {
-    if (!data) {
-      throw new Error("The argument 'data' was not provided or is null or undefined.")
-    }
-
-    if (!isPlainObject(data)) {
-      throw new TypeError(`The 'data' argument must be a plain object. Received: ${JSON.stringify(data)}`)
-    }
-
-    if (Array.isArray(data)) {
-      throw new Error('Array is not allowed. To create collections use createCollection.')
-    }
 
     const instance = new this()
-
-    for (const [attrName, value] of Object.entries(data)) {
-      if (attrName === '__schema') continue
-      if (value === undefined) continue
-
-      this._validate(instance, attrName, value)
-
-      if (isPlainObject(value)) {
-        this._createSubModelProperty(instance, attrName, value)
-      } else {
-        this._createSimpleProperty(instance, attrName, value)
-      }
-    }
-
-    this._hideSchemaProperty(instance)
-    this._makeGettersAndSettersEnumerable(instance)
-
+    instance.setValues(data)
+    instance._makeGettersAndSettersEnumerable()
     return instance
   }
 
@@ -207,77 +225,17 @@ export default class Model {
     return collectionData.map(data => this._create(data))
   }
 
-  /**
-   * Cria um atributo Simples na instancia
-   *
-   * @param instance
-   * @param attrName
-   * @param value
-   * @private
-   */
-  static _createSimpleProperty(instance, attrName, value) {
-    Object.defineProperty(instance, attrName, {
-      enumerable: true,
-      configurable: false,
-      writable: true,
-      value: cloneDeep(value)
-    })
-  }
 
   /**
-   * Cria um atributo Simples na instancia
-   *
-   * @param instance
-   * @param attrName
-   * @param value
-   * @private
-   */
-  static _createSubModelProperty(instance, attrName, value) {
-    const SubClass = this.__schema[attrName]
-
-    if (Array.isArray(value)) {
-      Object.defineProperty(instance, attrName, {
-        enumerable: true,
-        configurable: false,
-        writable: true,
-        value: SubClass._createCollection(value)
-      })
-    } else {
-      Object.defineProperty(instance, attrName, {
-        enumerable: true,
-        configurable: false,
-        writable: true,
-        value: SubClass._create(value)
-      })
-    }
-  }
-
-  /**
-   * Desabilita enumarable para atributo especial __schema
-   *
-   * @param instance
-   * @private
-   */
-  static _hideSchemaProperty(instance) {
-    Object.defineProperty(instance, '__schema', {
-      enumerable: false,
-      configurable: false
-    })
-  }
-
-  /**
-   * Habilitada o modo enumerable para todos os Getters e Setters definido pelo usuário
+   * Habilitada o modo enumerable para todos os Getters e Setters definido na instancia
    *  - Exibir atributos do getter e Setter no template
    *
-   *  TODO: Experimental, verificar se tem algum efeito colateral, caso positivo, desativar essa funcionalidade
-   *
-   * @param instance
    * @private
    */
-  static _makeGettersAndSettersEnumerable(instance) {
-    for (const [propName, propDesc] of Object.entries(Object.getOwnPropertyDescriptors(Object.getPrototypeOf(instance)))) {
+  _makeGettersAndSettersEnumerable() {
+    for (const [propName, propDesc] of Object.entries(Object.getOwnPropertyDescriptors(Object.getPrototypeOf(this)))) {
       if (!propDesc.enumerable && (propDesc.get || propDesc.set)) {
-        Object.defineProperty(instance, propName, {
+        Object.defineProperty(this, propName, {
           enumerable: true,
           configurable: false,
           set: propDesc.set,
@@ -288,19 +246,67 @@ export default class Model {
   }
 
   /**
-   * Valida Instancia
+   * Cria um atributo Simples na instancia
    *
-   * @param instance
    * @param attrName
    * @param value
    * @private
    */
-  static _validate(instance, attrName, value) {
-    if (!this.__schema) {
+  _createSimpleProperty(attrName, value) {
+    Object.defineProperty(this, attrName, {
+      enumerable: true,
+      configurable: false,
+      writable: true,
+      value: cloneDeep(value)
+    })
+  }
+
+  /**
+   * Cria um atributo Simples na instancia
+   *
+   * @param attrName
+   * @param value
+   * @private
+   */
+  _createSubModelProperty(attrName, value) {
+
+    const Class = this.constructor
+    const SubClass = Class.__schema[attrName]
+
+    if (Array.isArray(value)) {
+      Object.defineProperty(this, attrName, {
+        enumerable: true,
+        configurable: false,
+        writable: true,
+        value: SubClass._createCollection(value)
+      })
+    } else {
+      Object.defineProperty(this, attrName, {
+        enumerable: true,
+        configurable: false,
+        writable: true,
+        value: SubClass._create(value)
+      })
+    }
+  }
+
+
+  /**
+   * Valida dado
+   *
+   * @param attrName
+   * @param value
+   * @private
+   */
+  _validate(attrName, value) {
+
+    const Class = this.constructor
+
+    if (!Class.__schema) {
       return
     }
 
-    let validatorType = this.__schema[attrName]
+    let validatorType = Class.__schema[attrName]
     let options = []
 
     if (Array.isArray(validatorType)) {
@@ -309,7 +315,7 @@ export default class Model {
 
 
     if (validatorType === undefined) {
-      throw new TypeError(`In model '${this.name}', property '${attrName}' does not exist.`)
+      throw new TypeError(`In model '${Class.name}', property '${attrName}' does not exist.`)
     }
 
     ///////////////////////////////////////////////////
@@ -327,7 +333,7 @@ export default class Model {
     ///////////////////////////////////////////////////
     if (validatorType === 'date') {
       if (!(value instanceof Date)) {
-        throw new TypeError(`In model '${this.name}', property '${attrName}'  must be Date object`)
+        throw new TypeError(`In model '${Class.name}', property '${attrName}'  must be Date object`)
       }
       return
     }
@@ -338,7 +344,7 @@ export default class Model {
     if (['boolean', 'number', 'string'].includes(validatorType)) {
       // eslint-disable-next-line valid-typeof
       if (typeof value !== validatorType) {
-        throw new TypeError(`In model '${this.name}', property '${attrName}'  must be '${validatorType}'`)
+        throw new TypeError(`In model '${Class.name}', property '${attrName}'  must be '${validatorType}'`)
       }
       return
     }
@@ -348,11 +354,11 @@ export default class Model {
     ///////////////////////////////////////////////////
 
     if (!validator[validatorType]) {
-      throw new TypeError(`In model '${this.name}', property '${attrName}', validator '${validatorType}' does not exist.`)
+      throw new TypeError(`In model '${Class.name}', property '${attrName}', validator '${validatorType}' does not exist.`)
     }
 
     if (!validator[validatorType](value, ...options)) {
-      throw new TypeError(`In model '${this.name}', property '${attrName}' is invalid '${validatorType}'. ${options ? 'Rules:' + JSON.stringify(options) : ''}'`)
+      throw new TypeError(`In model '${Class.name}', property '${attrName}' is invalid '${validatorType}'. ${options ? 'Rules:' + JSON.stringify(options) : ''}'`)
     }
 
   }
