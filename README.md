@@ -68,14 +68,18 @@ const user = await UserModel.create({
   idade: 39,
   brother: [{name: 'André', idade: 39}, {name: 'André', idade: 39}]
 })
+
+// Alterando propriedade (nunca atribua valores direatamente, pois validações não serão executada e podem ocorrer erros)
+user.setValue('lastName', 'Silva')
+
 ```
 
 ## Recomendações
 
-* Centralize todos as operações relacionado a dados no model, permitindo que seja utilizado em diferentes componentes
-* Getters e Setters para propriedades dinamicas como um valor monetário formatado, ou um calculo especial como somatório
-* Utilize os métodos fetch, fetchCollection, save, delete ou crie outros para requisições backend
-  * No nuxt pode utilizar $useFetch ou #fetch
+* Centralize todos as operações relacionado a dados no model, permitindo que seja utilizado em diferentes componentes.
+* Getters e Setters para propriedades dinamicas como um valor monetário formatado, ou um calculo especial como um somatório.
+* Utilize os métodos fetch, fetchCollection, save, delete ou crie outros para requisições backend.
+  * No nuxt pode utilizar $useFetch ou #fetch.
 
 # API
 
@@ -83,6 +87,8 @@ const user = await UserModel.create({
   reativa da instância criada.
 * **createCollection(collectionData):** cria uma coleção de instâncias do modelo a partir de um array de objetos plano
   com os dados e retorna uma referência reativa da coleção criada.
+* * **setValues(data):** Altera valores de uma instancia já existente, atributos undefined será ignorado, atributos definidos anteriormente e não definido aqui serão mantidos na instancia
+* * **setValue(atributo, valor):** Altera unico atributo da instancia
 
 ### Fetch e Refresh
 
@@ -113,9 +119,9 @@ export default class InventoryModel extends Model {
 }
 ```
 
-* Esse método será chamado inernamente pelo fetchCollection() e vai retornar data e uma função refresh
+* Esse método será chamado internamente pelo fetchCollection() e vai retornar data e uma função refresh
 * Também funciona para _fetch e fetch
-* Você pode criar outros métodos com mesma funcionalidade da mesma maneira q fetch e fetchColection foi implementado
+* Você pode criar outros métodos com mesma funcionalidade da mesma maneira que fetch e fetchColection foi implementado
 
 Exemplo:
 
