@@ -44,7 +44,23 @@ export default class Model {
    * @returns {Ref<UnwrapRef<*[]>>}
    */
   static createCollection(collectionData) {
-    return ref(this._createCollection(collectionData))
+    const collection = ref(this._createCollection(collectionData))
+
+    ////////////////////////////
+    // Métodos auxiliares:
+    // TODO: Verificar se vai ocorrer efeito colateral, caso positivo remover funcionalidade
+    ////////////////////////////
+    Object.defineProperty(collection, 'findById', {
+      enumerable: false,
+      configurable: false,
+      writable: false,
+      value: function (id) {
+        return this.value.find(item => item.id === id)
+      }
+    })
+
+
+    return collection
   }
 
   /**
@@ -79,7 +95,7 @@ export default class Model {
    * @returns {Promise<void>}
    */
   static async _fetch(id) {
-    throw Error('Not implemented yet')
+    throw Error('Method _fetch() not implemented yet')
   }
 
   /**
@@ -99,7 +115,7 @@ export default class Model {
    * @returns {Promise<void>}
    */
   static async _fetchCollection() {
-    throw Error('Not implemented yet')
+    throw Error('Method _fetchCollection() not implemented yet')
   }
 
 
@@ -120,7 +136,7 @@ export default class Model {
    * @returns {Promise<void>}
    */
   async save() {
-    throw Error('Not implemented yet')
+    throw Error('Method save() not implemented yet')
   }
 
   /**
@@ -130,7 +146,7 @@ export default class Model {
    * @returns {Promise<void>}
    */
   async delete() {
-    throw Error('Not implemented yet')
+    throw Error('Method delete() not implemented yet')
   }
 
   /// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
