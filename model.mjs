@@ -285,7 +285,7 @@ export default class Model {
         enumerable: true,
         configurable: false,
         writable: true,
-        value: SubClass._create(value)
+        value: value === null ? null : SubClass._create(value)
       })
     }
   }
@@ -302,9 +302,9 @@ export default class Model {
 
     const Class = this.constructor
 
-    if (!Class.__schema) {
-      return
-    }
+    if (!Class.__schema) return
+
+    if (value === null) return
 
     let validatorType = Class.__schema[attrName]
     let options = []
