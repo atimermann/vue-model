@@ -273,6 +273,8 @@ export default class Model {
     const Class = this.constructor
     const SubClass = Class.__schema[attrName]
 
+    if (!SubClass) throw new Error(`Model "${attrName}" not exists.`)
+
     if (Array.isArray(value)) {
       Object.defineProperty(this, attrName, {
         enumerable: true,
