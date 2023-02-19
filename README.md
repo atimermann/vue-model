@@ -14,6 +14,9 @@ objetos aninhados em novas instâncias, conforme definido no schema do modelo.
 * Integração com o Vue3 (retorna instancias reativas prontas para serem usadas no template)
 * Suporta validação de dados através do modulo Validator (https://www.npmjs.com/package/validator)
 * Permite criação de coleções
+* Valores nulls não são validados, já q não existe validação obrigatório, apenas coleções não aceitam null, devendo
+  sempre ser um array. (Nota: se implementado validação obrigatório, alterar este comportamento)
+* Undefined é ignorado como se a propriedade não existisse
 
 ## Estrutura de diretório
 
@@ -55,8 +58,8 @@ Em __schema, definimos o tipo de cada propriedade do modelo, que pode ser:
 
 * Simples: 'string', 'number', 'boolean' ou 'date', onde a propriedade será testada com typeOf
 * Complexo: apenas para string, será utilizada a biblioteca Validator. Veja exemplo de validação de e-mail
-* ModelClass: quando representa outro modelo, os dados serão instanciados automaticamente com a classe definida,
-* podendo ser array ou objeto simples
+* ModelClass: quando representa outro modelo, os dados serão instanciados automaticamente com a classe definida, podendo
+  ser array ou objeto simples
 
 ## Exemplo de uso
 
@@ -77,9 +80,10 @@ user.setValue('lastName', 'Silva')
 ## Recomendações
 
 * Centralize todos as operações relacionado a dados no model, permitindo que seja utilizado em diferentes componentes.
-* Getters e Setters para propriedades dinamicas como um valor monetário formatado, ou um calculo especial como um somatório.
+* Getters e Setters para propriedades dinamicas como um valor monetário formatado, ou um calculo especial como um
+  somatório.
 * Utilize os métodos fetch, fetchCollection, save, delete ou crie outros para requisições backend.
-  * No nuxt pode utilizar $useFetch ou #fetch.
+    * No nuxt pode utilizar $useFetch ou $fetch.
 
 # API
 
@@ -87,8 +91,11 @@ user.setValue('lastName', 'Silva')
   reativa da instância criada.
 * **createCollection(collectionData):** cria uma coleção de instâncias do modelo a partir de um array de objetos plano
   com os dados e retorna uma referência reativa da coleção criada.
-* * **setValues(data):** Altera valores de uma instancia já existente, atributos undefined será ignorado, atributos definidos anteriormente e não definido aqui serão mantidos na instancia
-* * **setValue(atributo, valor):** Altera unico atributo da instancia
+*
+    * **setValues(data):** Altera valores de uma instancia já existente, atributos undefined será ignorado, atributos
+      definidos anteriormente e não definido aqui serão mantidos na instancia
+*
+    * **setValue(atributo, valor):** Altera unico atributo da instancia
 
 ### Fetch e Refresh
 
@@ -149,8 +156,6 @@ export default class InventoryModel extends Model {
 * **delete():** remove uma instância do modelo no backend. Este método deve ser implementado de acordo com a API do
   backend
   utilizado na aplicação.
-
-
 
 # Métodos Auxiliares em coleções
 
