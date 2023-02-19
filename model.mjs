@@ -29,6 +29,14 @@ export default class Model {
   static __schema = undefined
 
   /**
+   * valida se Objeto é instacia de Model
+   *
+   * @type {boolean}
+   * @private
+   */
+  static __isAgtmVueModel = true
+
+  /**
    * Cria uma nova instância do modelo
    *
    * @param data {Object} Objeto plano com os dados
@@ -128,16 +136,17 @@ export default class Model {
   }
 
   /**
-   * Atribui um valor a instancia do modelo realizando validações necessárias, sem realizar outra instancia
+   * Atribui um valor a instância do modelo realizando validações necessárias, sem realizar outra instancia
    *
    * @param attrName
    * @param value
    */
   setValue(attrName, value) {
+    const Class = this.constructor
 
     this._validate(attrName, value)
 
-    if (isPlainObject(value)) {
+    if (isPlainObject(value) && typeof Class.__schema[attrName] === 'function') {
       this._createSubModelProperty(attrName, value)
     } else {
       this._createSimpleProperty(attrName, value)
@@ -273,7 +282,7 @@ export default class Model {
     const Class = this.constructor
     const SubClass = Class.__schema[attrName]
 
-    if (!SubClass || typeof SubClass !== 'function') throw new Error(`Model "${attrName}" not exists.`)
+    if (!SubClass.__isAgtmVueModel) throw new Error(`Model "${attrName}" is invalid vue-model.`)
 
     if (Array.isArray(value)) {
       Object.defineProperty(this, attrName, {
@@ -343,7 +352,7 @@ export default class Model {
     ///////////////////////////////////////////////////
     // Boolean / Number / String
     ///////////////////////////////////////////////////
-    if (['boolean', 'number', 'string'].includes(validatorType)) {
+    if (['boolean', 'number', 'string', 'object'].includes(validatorType)) {
       // eslint-disable-next-line valid-typeof
       if (typeof value !== validatorType) {
         throw new TypeError(`In model '${Class.name}', property '${attrName}'  must be '${validatorType}'`)
